@@ -1,0 +1,231 @@
+import os
+import re
+from typing import List, Dict
+
+
+# Utility to extract Java classes and methods from Java files
+def extract_java_classes_and_methods(code_base_dir: str) -> Dict:
+    classes_info = []
+
+    # Walk through the directory and read Java files
+    for root, dirs, files in os.walk(code_base_dir):
+        for file in files:
+            if file.endswith(".java"):
+                file_path = os.path.join(root, file)
+
+                with open(file_path, 'r', encoding="utf-8") as f:
+                    content = f.read()
+
+                    # Extract classes using regular expressions
+                    class_matches = re.findall(r'class (\w+)', content)
+                    for class_name in class_matches:
+                        class_info = {
+                            'name': class_name,
+                            'docstring': extract_docstring(content, class_name),
+                            'methods': extract_methods(content)
+                        }
+                        classes_info.append(class_info)
+
+    return {'classes': classes_info}
+
+
+# Utility to extract method names, parameters, and docstrings
+def extract_methods(content: str) -> List[Dict[str, str]]:
+    method_info = []
+
+    # Regular expression to match Java methods (basic)
+    method_pattern = re.compile(r'public\s+[\w<>\[\]]+\s+(\w+)\s*\(([^)]*)\)\s*({|//|/\*)', re.DOTALL)
+    methods = method_pattern.findall(content)
+
+    for method in methods:
+        method_name = method[0]
+        params = [param.strip() for param in method[1].split(',') if param.strip()]
+        docstring = extract_docstring(content, method_name)
+
+        method_info.append({
+            'name': method_name,
+            'params': params,
+            'docstring': docstring
+        })
+
+    return method_info
+
+
+# Utility to extract docstring for a class or method (simple regex for comments)
+def extract_docstring(content: str, identifier: str) -> str:
+    # Look for comments above the class or method
+    docstring_pattern = re.compile(r'(?:/\*{2}|//\s?\*{1,2})\s*(.*)', re.DOTALL)
+    match = docstring_pattern.search(content)
+
+    if match:
+        return match.group(1).strip().replace('\n', ' ').strip()
+    else:
+        return "No docstring available"
+
+
+# Extract dependencies from pom.xml (for Maven projects)
+def extract_dependencies_from_pom(pom_file_path: str) -> List[str]:
+    dependencies = []
+    with open(pom_file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        dep_pattern = re.compile(r'<dependency>.*?<groupId>(.*?)</groupId>.*?<artifactId>(.*?)</artifactId>.*?<version>(.*?)</version>', re.DOTALL)
+        dependencies = [f"{match[0]}:{match[1]}:{match[2]}" for match in dep_pattern.findall(content)]
+    return dependencies
+
+
+# Extract dependencies from build.gradle (for Gradle projects)
+def extract_dependencies_from_gradle(gradle_file_path: str) -> List[str]:
+    dependencies = []
+    with open(gradle_file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        dep_pattern = re.compile(r'implementation\s*\'([^\']+)\'')
+        dependencies = dep_pattern.findall(content)
+    return dependencies
+
+
+# Function to generate prompt variables for a Java Spring Boot project
+def generate_prompt_variables(code_base_dir: str, pom_file_path: str = None, gradle_file_path: str = None) -> Dict[str, str]:
+    # Extract Java classes, methods, and their details
+    code_info = extract_java_classes_and_methods(code_base_dir)
+
+    # Extract dependencies from either pom.xml (Maven) or build.gradle (Gradle)
+    dependencies = []
+    if pom_file_path:
+        dependencies = extract_dependencies_from_pom(pom_file_path)
+    elif gradle_file_path:
+        dependencies = extract_dependencies_from_gradle(gradle_file_path)
+
+    # Example project metadata
+    project_name = "SpringBootExample"
+    project_objective = "A Spring Boot application to manage tasks and users."
+    programming_language = "Java"
+    key_features = "REST API, User Authentication, Database Integration, Real-time Notifications"
+
+    # Generate documentation prompts
+    prompts = {}
+
+    # 1. Project Overview Prompt
+    project_overview = f"""
+    Provide a brief description of the following project based on its codebase and purpose.
+    Project name: {project_name}
+    Main objective: {project_objective}
+    Language(s) used: {programming_language}
+    Key functionality: {key_features}
+    """
+    prompts['project_overview'] = project_overview
+
+    # 2. Installation Instructions Prompt
+    installation = f"""
+    Generate installation instructions for the following project. The project uses the following technologies:
+    Dependencies: {', '.join(dependencies)}
+    Installation steps: Clone the repo, run `mvn install` or `gradle build`, etc.
+    Setup environment: JDK 11 or higher
+    """
+    prompts['installation'] = installation
+
+    # 3. Dependencies List Prompt
+    dependencies_prompt = f"""
+    List all the dependencies used in the project.
+    Dependencies: {', '.join(dependencies)}
+    """
+    prompts['dependencies'] = dependencies_prompt
+
+    # 4. Class Documentation Prompts
+    class_docs = []
+    for class_info in code_info['classes']:
+        class_doc = f"""
+        Generate detailed documentation for the following class.
+        Class Name: {class_info['name']}
+        Docstring: {class_info['docstring']}
+        Methods: {', '.join([method['name'] for method in class_info['methods']])}
+        """
+        class_docs.append(class_doc)
+    
+    prompts['class_docs'] = class_docs
+
+    # 5. Method Documentation Prompts
+    method_docs = []
+    for class_info in code_info['classes']:
+        for method_info in class_info['methods']:
+            method_doc = f"""
+            Generate detailed documentation for the following method.
+            Method Name: {method_info['name']}
+            Parameters: {', '.join(method_info['params'])}
+            Docstring: {method_info['docstring']}
+            """
+            method_docs.append(method_doc)
+    
+    prompts['method_docs'] = method_docs
+
+    # 6. API Documentation (if applicable)
+    api_docs = """
+    Document all the endpoints for the REST API exposed by this Spring Boot application.
+    - List all available endpoints (GET, POST, PUT, DELETE) and their parameters.
+    - Describe the role of each endpoint in the system.
+    """
+    prompts['api_docs'] = api_docs
+
+    # 7. Testing Documentation Prompt
+    testing_docs = """
+    Generate testing documentation for the project.
+    - Describe the testing framework used (JUnit, TestNG, etc.).
+    - List all test cases, their purpose, and any dependencies.
+    """
+    prompts['testing_docs'] = testing_docs
+
+    # 8. Usage Examples Prompt
+    usage_examples = """
+    Provide usage examples for the project.
+    - Show examples of how to interact with the APIs.
+    - Include sample inputs and outputs.
+    """
+    prompts['usage_examples'] = usage_examples
+
+    # 9. Codebase Structure Prompt
+    codebase_structure = """
+    Provide a description of the overall structure of the codebase.
+    - Explain the role of each major folder (e.g., src, resources, test).
+    - Describe the organization of classes and packages.
+    """
+    prompts['codebase_structure'] = codebase_structure
+
+    return prompts
+
+
+# Example usage
+code_base_dir = "path_to_your_spring_boot_project"  # Replace with your directory path
+pom_file_path = "path_to_pom.xml"  # Replace with your pom.xml path (for Maven projects)
+gradle_file_path = "path_to_build.gradle"  # Replace with your build.gradle path (for Gradle projects)
+
+# Generate all prompt variables
+prompts = generate_prompt_variables(code_base_dir, pom_file_path=pom_file_path)
+
+# Print generated prompts
+print("Project Overview Prompt:")
+print(prompts['project_overview'])
+
+print("\nInstallation Instructions Prompt:")
+print(prompts['installation'])
+
+print("\nDependencies List Prompt:")
+print(prompts['dependencies'])
+
+print("\nClass Documentation Prompts:")
+for doc in prompts['class_docs']:
+    print(doc)
+
+print("\nMethod Documentation Prompts:")
+for doc in prompts['method_docs']:
+    print(doc)
+
+print("\nAPI Documentation Prompt:")
+print(prompts['api_docs'])
+
+print("\nTesting Documentation Prompt:")
+print(prompts['testing_docs'])
+
+print("\nUsage Examples Prompt:")
+print(prompts['usage_examples'])
+
+print("\nCodebase Structure Prompt:")
+print(prompts['codebase_structure'])
