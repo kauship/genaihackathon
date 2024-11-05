@@ -1,0 +1,154 @@
+import os
+import subprocess
+import openai
+
+# Set up your OpenAI API key
+openai.api_key = "your_openai_api_key_here"
+
+def run_command(command):
+    """Utility to run a shell command and capture the output."""
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Error running command: {command}")
+        print(result.stderr)
+    return result.stdout
+
+def extract_javadoc_comments(project_dir):
+    """Extract Javadoc comments from the Java project."""
+    javadoc_command = (
+        f"javadoc -d /tmp -sourcepath {project_dir}/src/main/java "
+        f"-subpackages com.example"  # Adjust the base package as per your project
+    )
+    print("Extracting Javadoc comments...")
+    return run_command(javadoc_command)
+
+def generate_gradle_dependency_report(project_dir):
+    """Generate a dependency report using Gradle."""
+    gradle_command = f"cd {project_dir} && ./gradlew dependencies --configuration compileClasspath"
+    print("Generating dependency report...")
+    return run_command(gradle_command)
+
+def extract_api_endpoints(project_dir):
+    """Extract REST API endpoints by scanning for annotations."""
+    api_endpoints = []
+    for root, _, files in os.walk(os.path.join(project_dir, "src/main/java")):
+        for file in files:
+            if file.endswith(".java"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    if "@RequestMapping" in content:
+                        api_endpoints.append(f"Endpoints in {file}:")
+                        # Simple scan for mappings
+                        for line in content.splitlines():
+                            if "@RequestMapping" in line or "@GetMapping" in line or "@PostMapping" in line:
+                                api_endpoints.append(line.strip())
+    return "\n".join(api_endpoints)
+
+def openai_generate_text(prompt, max_tokens=1000):
+    """Generate text using OpenAI with a specific prompt."""
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=max_tokens
+    )
+    return response.choices[0].text.strip()
+
+def generate_class_documentation(class_summary):
+    """Generate detailed class documentation using OpenAI."""
+    prompt = f"""
+    Generate a comprehensive documentation for the following Java class summary:
+
+    ### Class Summary:
+    {class_summary}
+
+    Provide a clear class description, its purpose, key attributes, constructors, and any relevant methods with detailed explanations.
+    """
+    return openai_generate_text(prompt)
+
+def generate_method_documentation(method_details):
+    """Generate detailed documentation for Java methods using OpenAI."""
+    prompt = f"""
+    Generate documentation for the following Java methods:
+
+    ### Methods:
+    {method_details}
+
+    Provide a description for each method, including parameters, expected inputs, outputs, exceptions thrown, and any key logic details.
+    """
+    return openai_generate_text(prompt)
+
+def generate_dependency_documentation(dependency_report):
+    """Generate a detailed description of project dependencies."""
+    prompt = f"""
+    Analyze and describe the following project dependencies report:
+
+    ### Dependencies Report:
+    {dependency_report}
+
+    Provide an overview of each dependency, its role in the project, and any specific version details or notable interactions.
+    """
+    return openai_generate_text(prompt)
+
+def generate_api_endpoint_documentation(api_endpoints):
+    """Generate detailed REST API endpoint documentation."""
+    prompt = f"""
+    Document the following REST API endpoints for a Java Spring Boot project:
+
+    ### API Endpoints:
+    {api_endpoints}
+
+    For each endpoint, provide a description of the HTTP method, endpoint path, request parameters, response format, and any relevant usage notes.
+    """
+    return openai_generate_text(prompt)
+
+def extract_method_details(project_dir):
+    """Extract method details from Java files for documentation purposes."""
+    method_details = []
+    for root, _, files in os.walk(os.path.join(project_dir, "src/main/java")):
+        for file in files:
+            if file.endswith(".java"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    # Find method declarations (very basic parsing, can be enhanced)
+                    for line in content.splitlines():
+                        if line.strip().startswith("public") or line.strip().startswith("private") or line.strip().startswith("protected"):
+                            method_details.append(line.strip())
+    return "\n".join(method_details)
+
+def save_to_file(content, file_path):
+    """Save generated content to a file."""
+    with open(file_path, 'w') as f:
+        f.write(content)
+    print(f"Saved to {file_path}")
+
+def main():
+    project_dir = "/path/to/your/project"  # Update with the path to your project
+    output_dir = "/path/to/output/docs"    # Update with the desired output directory
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Extract Javadoc comments and generate class documentation
+    javadoc_comments = extract_javadoc_comments(project_dir)
+    class_docs = generate_class_documentation(javadoc_comments)
+    save_to_file(class_docs, os.path.join(output_dir, "class_documentation.txt"))
+
+    # Generate Gradle Dependency Report and document dependencies
+    dependency_report = generate_gradle_dependency_report(project_dir)
+    dependency_docs = generate_dependency_documentation(dependency_report)
+    save_to_file(dependency_docs, os.path.join(output_dir, "dependency_documentation.txt"))
+
+    # Extract and document methods
+    method_details = extract_method_details(project_dir)
+    method_docs = generate_method_documentation(method_details)
+    save_to_file(method_docs, os.path.join(output_dir, "method_documentation.txt"))
+
+    # Extract API Endpoints and document them
+    api_endpoints = extract_api_endpoints(project_dir)
+    api_docs = generate_api_endpoint_documentation(api_endpoints)
+    save_to_file(api_docs, os.path.join(output_dir, "api_documentation.txt"))
+
+    print("Documentation generation complete.")
+
+if __name__ == "__main__":
+    main()
