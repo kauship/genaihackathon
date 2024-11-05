@@ -13,14 +13,31 @@ def run_command(command):
         print(result.stderr)
     return result.stdout
 
-def extract_javadoc_comments(project_dir):
-    """Extract Javadoc comments from the Java project."""
-    javadoc_command = (
-        f"javadoc -d /tmp -sourcepath {project_dir}/src/main/java "
-        f"-subpackages com.example"  # Adjust the base package as per your project
-    )
-    print("Extracting Javadoc comments...")
-    return run_command(javadoc_command)
+def find_java_source_dirs(project_dir):
+    """Automatically detect Java source directories in the project."""
+    source_dirs = []
+    for root, dirs, files in os.walk(project_dir):
+        if "java" in root and any(file.endswith(".java") for file in files):
+            source_dirs.append(root)
+    return source_dirs
+
+def extract_javadoc_comments(source_dirs):
+    """Extract Javadoc comments by scanning Java source files."""
+    javadoc_comments = []
+    for source_dir in source_dirs:
+        for root, _, files in os.walk(source_dir):
+            for file in files:
+                if file.endswith(".java"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                        # Simple regex or keyword-based capture for Javadoc comments
+                        comments = "\n".join(
+                            line for line in content.splitlines() if line.strip().startswith("/**")
+                        )
+                        if comments:
+                            javadoc_comments.append(f"File: {file_path}\n{comments}")
+    return "\n\n".join(javadoc_comments)
 
 def generate_gradle_dependency_report(project_dir):
     """Generate a dependency report using Gradle."""
@@ -28,21 +45,21 @@ def generate_gradle_dependency_report(project_dir):
     print("Generating dependency report...")
     return run_command(gradle_command)
 
-def extract_api_endpoints(project_dir):
-    """Extract REST API endpoints by scanning for annotations."""
+def extract_api_endpoints(source_dirs):
+    """Extract REST API endpoints by scanning for Spring annotations."""
     api_endpoints = []
-    for root, _, files in os.walk(os.path.join(project_dir, "src/main/java")):
-        for file in files:
-            if file.endswith(".java"):
-                file_path = os.path.join(root, file)
-                with open(file_path, 'r') as f:
-                    content = f.read()
-                    if "@RequestMapping" in content:
-                        api_endpoints.append(f"Endpoints in {file}:")
-                        # Simple scan for mappings
-                        for line in content.splitlines():
-                            if "@RequestMapping" in line or "@GetMapping" in line or "@PostMapping" in line:
-                                api_endpoints.append(line.strip())
+    for source_dir in source_dirs:
+        for root, _, files in os.walk(source_dir):
+            for file in files:
+                if file.endswith(".java"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                        if "@RequestMapping" in content:
+                            api_endpoints.append(f"Endpoints in {file_path}:")
+                            for line in content.splitlines():
+                                if "@RequestMapping" in line or "@GetMapping" in line or "@PostMapping" in line:
+                                    api_endpoints.append(line.strip())
     return "\n".join(api_endpoints)
 
 def openai_generate_text(prompt, max_tokens=1000):
@@ -102,19 +119,19 @@ def generate_api_endpoint_documentation(api_endpoints):
     """
     return openai_generate_text(prompt)
 
-def extract_method_details(project_dir):
+def extract_method_details(source_dirs):
     """Extract method details from Java files for documentation purposes."""
     method_details = []
-    for root, _, files in os.walk(os.path.join(project_dir, "src/main/java")):
-        for file in files:
-            if file.endswith(".java"):
-                file_path = os.path.join(root, file)
-                with open(file_path, 'r') as f:
-                    content = f.read()
-                    # Find method declarations (very basic parsing, can be enhanced)
-                    for line in content.splitlines():
-                        if line.strip().startswith("public") or line.strip().startswith("private") or line.strip().startswith("protected"):
-                            method_details.append(line.strip())
+    for source_dir in source_dirs:
+        for root, _, files in os.walk(source_dir):
+            for file in files:
+                if file.endswith(".java"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, 'r') as f:
+                        content = f.read()
+                        for line in content.splitlines():
+                            if line.strip().startswith("public") or line.strip().startswith("private") or line.strip().startswith("protected"):
+                                method_details.append(f"{file_path}: {line.strip()}")
     return "\n".join(method_details)
 
 def save_to_file(content, file_path):
@@ -124,12 +141,15 @@ def save_to_file(content, file_path):
     print(f"Saved to {file_path}")
 
 def main():
-    project_dir = "/path/to/your/project"  # Update with the path to your project
+    project_dir = "/path/to/your/project"  # Only project directory is needed now
     output_dir = "/path/to/output/docs"    # Update with the desired output directory
     os.makedirs(output_dir, exist_ok=True)
 
+    # Automatically find Java source directories
+    source_dirs = find_java_source_dirs(project_dir)
+
     # Extract Javadoc comments and generate class documentation
-    javadoc_comments = extract_javadoc_comments(project_dir)
+    javadoc_comments = extract_javadoc_comments(source_dirs)
     class_docs = generate_class_documentation(javadoc_comments)
     save_to_file(class_docs, os.path.join(output_dir, "class_documentation.txt"))
 
@@ -139,12 +159,12 @@ def main():
     save_to_file(dependency_docs, os.path.join(output_dir, "dependency_documentation.txt"))
 
     # Extract and document methods
-    method_details = extract_method_details(project_dir)
+    method_details = extract_method_details(source_dirs)
     method_docs = generate_method_documentation(method_details)
     save_to_file(method_docs, os.path.join(output_dir, "method_documentation.txt"))
 
     # Extract API Endpoints and document them
-    api_endpoints = extract_api_endpoints(project_dir)
+    api_endpoints = extract_api_endpoints(source_dirs)
     api_docs = generate_api_endpoint_documentation(api_endpoints)
     save_to_file(api_docs, os.path.join(output_dir, "api_documentation.txt"))
 
