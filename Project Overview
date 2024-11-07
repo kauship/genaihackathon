@@ -67,3 +67,29 @@ with open("file_summaries.json", "w") as f:
 with open("project_overview.txt", "w") as f:
     f.write("Project Overview:\n")
     f.write(overview)
+
+
+
+
+================
+
+import os
+
+project_path = "/path/to/spring-petclinic"
+all_documents = []
+
+# Walk through the directory and load only specific files (for example, 50 files at a time)
+for root, dirs, files in os.walk(project_path):
+    for file in files:
+        if file.endswith(".java"):
+            file_path = os.path.join(root, file)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                code_content = f.read()
+                all_documents.append({
+                    "filename": file_path,
+                    "content": code_content
+                })
+
+# Now you have all `.java` files manually loaded into `all_documents`
+print(f"Total documents loaded: {len(all_documents)}")
+
