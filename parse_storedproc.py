@@ -1,18 +1,17 @@
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier, Parenthesis
-from sqlparse.tokens import Keyword, DML, DDL
+from sqlparse.tokens import Keyword, DML, DDL, Name, Whitespace
 
-def extract_identifiers(token_list):
+def extract_identifiers(token):
     """Helper to extract table/column identifiers from tokens."""
     identifiers = []
-    for token in token_list.tokens:
-        if isinstance(token, IdentifierList):
-            for identifier in token.get_identifiers():
-                identifiers.append(identifier.get_real_name())
-        elif isinstance(token, Identifier):
-            identifiers.append(token.get_real_name())
-        elif isinstance(token, Parenthesis):
-            identifiers.extend(extract_identifiers(token))  # Recursive for nested queries
+    if isinstance(token, IdentifierList):
+        for identifier in token.get_identifiers():
+            identifiers.append(identifier.get_real_name())
+    elif isinstance(token, Identifier):
+        identifiers.append(token.get_real_name())
+    elif isinstance(token, Parenthesis):
+        identifiers.extend(extract_identifiers(token))
     return identifiers
 
 def parse_stored_procedure(proc_text):
@@ -22,7 +21,7 @@ def parse_stored_procedure(proc_text):
     # Parse the SQL text
     parsed = sqlparse.parse(formatted_proc)
     
-    # Initialize the structure to store parsed details
+    # Initialize structure to store parsed details
     procedure_summary = {
         'variables': {},
         'statements': [],
@@ -30,10 +29,6 @@ def parse_stored_procedure(proc_text):
         'conditions': [],
         'nested_queries': []
     }
-
-    # Track variables declared in the procedure
-    current_loop = None
-    current_condition = None
 
     for stmt in parsed:
         stmt_info = {
@@ -44,38 +39,48 @@ def parse_stored_procedure(proc_text):
             'nested_queries': []
         }
 
-        for token in stmt.tokens:
+        # Process tokens within the statement
+        token_iterator = iter(stmt.tokens)
+        for token in token_iterator:
             # Detect and store declared variables
             if token.ttype is DDL and token.value.upper() == 'DECLARE':
-                # Extract declared variables
-                var_name = next(token.get_identifiers()).get_real_name()
-                procedure_summary['variables'][var_name] = None  # Initialize as None
-                
-            # Detect and track variable assignments
+                # Get the next non-whitespace token for variable name
+                next_token = next(token_iterator)
+                if isinstance(next_token, Identifier):
+                    var_name = next_token.get_real_name()
+                    procedure_summary['variables'][var_name] = None
+
+            # Track variable assignments (SET statements)
             elif token.ttype is Keyword and token.value.upper() == 'SET':
-                var_name = next(token.get_identifiers()).get_real_name()
-                value_token = next(token.get_identifiers())
-                procedure_summary['variables'][var_name] = value_token
-                
-            # Identify and analyze main statement types
+                # Capture the variable name and assigned value
+                next_token = next(token_iterator)
+                if isinstance(next_token, Identifier):
+                    var_name = next_token.get_real_name()
+                    assignment_value = next(token_iterator, None)
+                    procedure_summary['variables'][var_name] = str(assignment_value)
+
+            # Identify main statement types (SELECT, INSERT, UPDATE, DELETE)
             elif token.ttype is DML:
                 stmt_info['type'] = token.value.upper()
                 stmt_info['tables'] = extract_identifiers(stmt)
-
-            # Detect conditions (IF, CASE, WHERE, etc.)
-            if token.ttype is Keyword and token.value.upper() in ['IF', 'WHERE', 'CASE']:
+                
+            # Capture conditions (IF, WHERE, CASE)
+            elif token.ttype is Keyword and token.value.upper() in ['IF', 'WHERE', 'CASE']:
                 condition_text = str(token)
                 stmt_info['conditions'].append(condition_text)
                 procedure_summary['conditions'].append(condition_text)
 
-            # Detect loops (e.g., WHILE loops)
+            # Detect and analyze loops (e.g., WHILE)
             elif token.ttype is Keyword and token.value.upper() == 'WHILE':
-                loop_condition = next(token.get_identifiers())
-                procedure_summary['loops'].append({'condition': str(loop_condition), 'body': str(stmt)})
-                current_loop = stmt  # Track the loop context
+                loop_condition = next(token_iterator, None)
+                if loop_condition:
+                    procedure_summary['loops'].append({
+                        'condition': str(loop_condition),
+                        'body': str(stmt)
+                    })
 
-            # Detect nested queries (subqueries)
-            if token.is_group and isinstance(token, Parenthesis):
+            # Capture nested queries within parentheses
+            elif token.is_group and isinstance(token, Parenthesis):
                 subquery = str(token).strip('()')
                 if 'SELECT' in subquery.upper():
                     stmt_info['nested_queries'].append(subquery)
