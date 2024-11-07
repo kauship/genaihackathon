@@ -1,0 +1,69 @@
+pip install langchain openai
+
+import json
+from langchain.document_loaders import DirectoryLoader
+from langchain.llms import OpenAI
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
+
+# Set up project path and OpenAI API key
+project_path = "/path/to/spring-petclinic"  # Update with the actual path to your cloned project
+openai_api_key = "your_openai_api_key"      # Replace with your OpenAI API key
+
+# Step 1: Load Project Files
+loader = DirectoryLoader(project_path, glob="**/*.java")
+documents = loader.load()
+
+# Step 2: Initialize LLM for Summarization
+llm = OpenAI(model_name="gpt-4-turbo", api_key=openai_api_key)
+
+# Define the prompt template for summarizing each file
+prompt_template = """
+Summarize the purpose of the following Java file in the Spring PetClinic project.
+File: {filename}
+
+Code:
+{code_content}
+
+Please describe the main purpose, key functions, and any significant components or logic used.
+"""
+prompt = PromptTemplate(input_variables=["filename", "code_content"], template=prompt_template)
+summary_chain = LLMChain(llm=llm, prompt=prompt)
+
+# Step 3: Summarize Each File
+file_summaries = []
+for document in documents:
+    summary = summary_chain.run({
+        "filename": document.metadata["filename"],
+        "code_content": document.page_content
+    })
+    file_summaries.append({
+        "filename": document.metadata["filename"],
+        "summary": summary
+    })
+
+# Display individual file summaries (optional)
+for summary in file_summaries:
+    print(f"File: {summary['filename']}\nSummary: {summary['summary']}\n")
+
+# Step 4: Generate a Project Overview
+combined_summaries = "\n".join([f"{summary['filename']}: {summary['summary']}" for summary in file_summaries])
+overview_prompt = f"""
+Based on the following summaries of each file in the Spring PetClinic project, provide a high-level overview of the project. 
+Include details on the main purpose of the project, its architecture, and the primary components or functionalities it includes.
+
+File Summaries:
+{combined_summaries}
+"""
+overview = llm(overview_prompt)
+
+# Display the final project overview
+print("Project Overview:\n", overview)
+
+# Step 5: Save Results to Files
+with open("file_summaries.json", "w") as f:
+    json.dump(file_summaries, f, indent=4)
+
+with open("project_overview.txt", "w") as f:
+    f.write("Project Overview:\n")
+    f.write(overview)
