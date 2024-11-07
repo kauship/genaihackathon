@@ -71,7 +71,7 @@ def parse_stored_procedure(proc_text):
             # Detect loops (e.g., WHILE loops)
             elif token.ttype is Keyword and token.value.upper() == 'WHILE':
                 loop_condition = next(token.get_identifiers())
-                procedure_summary['loops'].append({'condition': loop_condition, 'body': stmt})
+                procedure_summary['loops'].append({'condition': str(loop_condition), 'body': str(stmt)})
                 current_loop = stmt  # Track the loop context
 
             # Detect nested queries (subqueries)
@@ -115,11 +115,11 @@ formatted_text, summary = parse_stored_procedure(sybase_proc_text)
 
 print("Formatted Procedure:\n", formatted_text)
 print("\nProcedure Summary:")
-print("Variables Declared:")
+print("\nVariables Declared and Initial Values:")
 for var, value in summary['variables'].items():
     print(f"  {var}: {value}")
 
-print("\nStatements:")
+print("\nStatements Analyzed:")
 for i, stmt in enumerate(summary['statements']):
     print(f"Statement {i+1}:")
     print("  Type:", stmt['type'])
@@ -129,14 +129,14 @@ for i, stmt in enumerate(summary['statements']):
     print("  Nested Queries:", stmt['nested_queries'])
 
 print("\nLoops Detected:")
-for loop in summary['loops']:
-    print("  Loop Condition:", loop['condition'])
+for i, loop in enumerate(summary['loops']):
+    print(f"  Loop {i+1} Condition:", loop['condition'])
     print("  Loop Body:", loop['body'])
 
-print("\nConditions Detected:")
-for condition in summary['conditions']:
-    print("  Condition:", condition)
+print("\nConditions Detected in Procedure:")
+for i, condition in enumerate(summary['conditions']):
+    print(f"  Condition {i+1}: {condition}")
 
-print("\nNested Queries Detected:")
-for query in summary['nested_queries']:
-    print("  Nested Query:", query)
+print("\nNested Queries Detected in Procedure:")
+for i, query in enumerate(summary['nested_queries']):
+    print(f"  Nested Query {i+1}: {query}")
