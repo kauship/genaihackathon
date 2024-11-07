@@ -1,6 +1,6 @@
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier, Parenthesis
-from sqlparse.tokens import Keyword, DML, DDL, Name, Whitespace
+from sqlparse.tokens import Keyword, DML, DDL, Name, Whitespace, Comparison, String, Punctuation
 
 def extract_identifiers(token):
     """Helper to extract table/column identifiers from tokens."""
@@ -42,42 +42,49 @@ def parse_stored_procedure(proc_text):
         # Process tokens within the statement
         token_iterator = iter(stmt.tokens)
         for token in token_iterator:
+            print(f"Token: {token}, Type: {token.ttype}")  # Debug: print each token
+
             # Detect and store declared variables
             if token.ttype is DDL and token.value.upper() == 'DECLARE':
-                # Get the next non-whitespace token for variable name
-                next_token = next(token_iterator)
-                if isinstance(next_token, Identifier):
+                next_token = next(token_iterator, None)
+                if next_token and isinstance(next_token, Identifier):
                     var_name = next_token.get_real_name()
                     procedure_summary['variables'][var_name] = None
+                    print(f"Declared Variable: {var_name}")  # Debug: variable declaration
 
             # Track variable assignments (SET statements)
             elif token.ttype is Keyword and token.value.upper() == 'SET':
-                # Capture the variable name and assigned value
-                next_token = next(token_iterator)
-                if isinstance(next_token, Identifier):
-                    var_name = next_token.get_real_name()
+                var_name = next(token_iterator, None)
+                if var_name and isinstance(var_name, Identifier):
+                    var_name = var_name.get_real_name()
                     assignment_value = next(token_iterator, None)
-                    procedure_summary['variables'][var_name] = str(assignment_value)
+                    if assignment_value:
+                        procedure_summary['variables'][var_name] = str(assignment_value)
+                        print(f"Assigned Variable: {var_name} = {assignment_value}")  # Debug: variable assignment
 
             # Identify main statement types (SELECT, INSERT, UPDATE, DELETE)
             elif token.ttype is DML:
                 stmt_info['type'] = token.value.upper()
                 stmt_info['tables'] = extract_identifiers(stmt)
+                print(f"Statement Type: {stmt_info['type']}, Tables: {stmt_info['tables']}")  # Debug: statement type
                 
             # Capture conditions (IF, WHERE, CASE)
             elif token.ttype is Keyword and token.value.upper() in ['IF', 'WHERE', 'CASE']:
                 condition_text = str(token)
                 stmt_info['conditions'].append(condition_text)
                 procedure_summary['conditions'].append(condition_text)
+                print(f"Condition Detected: {condition_text}")  # Debug: condition
 
             # Detect and analyze loops (e.g., WHILE)
             elif token.ttype is Keyword and token.value.upper() == 'WHILE':
                 loop_condition = next(token_iterator, None)
                 if loop_condition:
+                    loop_condition_text = str(loop_condition)
                     procedure_summary['loops'].append({
-                        'condition': str(loop_condition),
+                        'condition': loop_condition_text,
                         'body': str(stmt)
                     })
+                    print(f"Loop Detected: {loop_condition_text}")  # Debug: loop condition
 
             # Capture nested queries within parentheses
             elif token.is_group and isinstance(token, Parenthesis):
@@ -85,11 +92,13 @@ def parse_stored_procedure(proc_text):
                 if 'SELECT' in subquery.upper():
                     stmt_info['nested_queries'].append(subquery)
                     procedure_summary['nested_queries'].append(subquery)
+                    print(f"Nested Query Detected: {subquery}")  # Debug: nested query
 
         # Track variables used in each statement
         variables_used = [var for var in procedure_summary['variables'] if var in str(stmt)]
         stmt_info['variables_used'] = variables_used
         procedure_summary['statements'].append(stmt_info)
+        print(f"Statement Info: {stmt_info}")  # Debug: statement info
 
     return formatted_proc, procedure_summary
 
