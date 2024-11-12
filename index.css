@@ -1,34 +1,39 @@
+/* Container with colorful gradient */
 .container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
-  text-align: center;
   padding: 2rem;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  color: #fff;
 }
 
 .title {
-  font-size: 2rem;
-  color: #3a3a3a;
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
 .subtitle {
-  color: #666;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: #333;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .label {
   font-weight: bold;
-  color: #333;
   margin-bottom: 0.5rem;
 }
 
@@ -36,34 +41,71 @@
   width: 100%;
   padding: 0.8rem;
   margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border: 2px solid #fda085;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
 .input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  border-color: #ff6f61;
+  box-shadow: 0 0 5px rgba(255, 111, 97, 0.3);
   outline: none;
 }
 
+/* Colorful, rounded button */
 .button {
-  padding: 0.8rem 2rem;
-  font-size: 1rem;
+  padding: 0.8rem 2.5rem;
+  font-size: 1.2rem;
   color: #fff;
-  background-color: #007bff;
+  background-color: #ff6f61;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background-color: #e35b54;
 }
 
+/* Section selection styles */
+.sectionSelection {
+  margin-top: 1.5rem;
+  text-align: left;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.sectionCheckboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #666;
+}
+
+.checkbox {
+  margin-right: 0.5rem;
+}
+
+/* Success/Error message styles */
 .message {
   margin-top: 1rem;
   font-size: 1rem;
-  color: #28a745;
+  color: #3c763d;
+  background-color: #dff0d8;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
 }
