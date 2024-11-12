@@ -1,104 +1,159 @@
-import React, { useState } from 'react';
-import Layout from '@theme/Layout';
-import styles from './index.module.css';
+/* Full-screen container */
+.fullscreenContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
 
-const SECTIONS = [
-  "Overview of Code",
-  "Getting Started",
-  "Code Structure Overview",
-  "Key Code Components",
-  "Functions and API Documentation",
-  "Error Handling and Logging",
-  "Dependencies",
-  "Configuration",
-  "Performance Considerations",
-  "Testing and Quality Assurance",
-  "Security Considerations",
-  "Version Control and Changelog",
-  "FAQ",
-  "Appendix",
-  "Conclusion",
-];
+.innerContainer {
+  max-width: 800px;
+  width: 100%;
+  padding: 20px;
+  background-color: var(--container-bg);
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
 
-const Home: React.FC = () => {
-  const [githubLink, setGithubLink] = useState('');
-  const [selectedSections, setSelectedSections] = useState<string[]>([]);
-  const [message, setMessage] = useState('');
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--highlight-color);
+  text-align: center;
+  margin-bottom: 0.8rem;
+}
 
-  const handleCheckboxChange = (section: string) => {
-    setSelectedSections(prev =>
-      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
-    );
-  };
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: var(--text-secondary-color);
+  text-align: center;
+}
 
-  const handleSelectAll = () => {
-    setSelectedSections(
-      selectedSections.length === SECTIONS.length ? [] : [...SECTIONS]
-    );
-  };
+/* Form styles */
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    try {
-      const response = await fetch('http://localhost:4000/generate-docs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ githubLink, selectedSections }),
-      });
-      const data = await response.json();
-      setMessage(response.ok ? 'Documentation generated successfully!' : data.error || 'Error generating documentation.');
-    } catch (error) {
-      setMessage('Error connecting to the server.');
-    }
-  };
+.label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
 
-  return (
-    <Layout title="Home" description="Generate Documentation for Your Project">
-      <div className={styles.fullscreenContainer}>
-        <div className={styles.innerContainer}>
-          <h1 className={styles.title}>Generate Documentation for Your GitHub Project</h1>
-          <p className={styles.subtitle}>Enter your GitHub link and choose the sections to include.</p>
-          
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <label htmlFor="githubLink" className={styles.label}>GitHub Repository Link:</label>
-            <input
-              type="text"
-              id="githubLink"
-              value={githubLink}
-              onChange={(e) => setGithubLink(e.target.value)}
-              placeholder="https://github.com/user/repo"
-              required
-              className={styles.input}
-            />
+.input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--input-text);
+}
 
-            <div className={styles.sectionSelection}>
-              <div className={styles.selectAll}>
-                <input type="checkbox" onChange={handleSelectAll} checked={selectedSections.length === SECTIONS.length} />
-                <span>Select All Sections</span>
-              </div>
+.input:focus {
+  border-color: var(--input-focus-border);
+  outline: none;
+  box-shadow: 0 0 5px rgba(100, 100, 100, 0.3);
+}
 
-              <div className={styles.sectionCheckboxes}>
-                {SECTIONS.map(section => (
-                  <label key={section} className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={selectedSections.includes(section)}
-                      onChange={() => handleCheckboxChange(section)}
-                      className={styles.checkbox}
-                    />
-                    {section}
-                  </label>
-                ))}
-              </div>
-            </div>
+.button {
+  padding: 0.8rem 2.5rem;
+  font-size: 1.2rem;
+  color: #fff;
+  background-color: var(--button-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 
-            <button type="submit" className={styles.button}>Generate Documentation</button>
-          </form>
-          {message && <p className={styles.message}>{message}</p>}
-        </div>
-      </div>
-    </Layout>
-  );
-};
+.button:hover {
+  background-color: var(--button-hover-color);
+}
 
-export default Home;
+.sectionSelection {
+  margin-top: 1.5rem;
+  text-align: left;
+  width: 100%;
+}
+
+.selectAll {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.selectAll input {
+  margin-right: 0.5rem;
+}
+
+.sectionCheckboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: var(--checkbox-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--checkbox-text);
+  transition: background-color 0.2s;
+}
+
+.checkboxLabel:hover {
+  background-color: var(--checkbox-hover-bg);
+}
+
+.checkbox {
+  margin-right: 0.5rem;
+}
+
+.message {
+  margin-top: 1rem;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  background-color: var(--message-bg);
+  color: var(--message-text);
+}
+
+/* Color variables for light and dark mode */
+:root {
+  --bg-color: #f4f8fb;
+  --text-color: #333;
+  --text-secondary-color: #555;
+  --highlight-color: #3a86ff;
+  --container-bg: #ffffff;
+  --input-border: #3a86ff;
+  --input-bg: #e0f2ff;
+  --input-text: #333;
+  --input-focus-border: #ff66c4;
+  --button-color: #3a86ff;
+  --button-hover-color: #0264c8;
+  --checkbox-bg: #f0f4ff;
+  --checkbox-text: #333;
+  --checkbox-hover-bg: #e0f0ff;
+  --message-bg: #e0ffeb;
+  --message-text: #0f5132;
+}
+
+[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --text-secondary-color: #b0b0b0;
+  -
