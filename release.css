@@ -1,64 +1,95 @@
-/* Releases.module.css */
-
+/* Container for the entire releases page */
 .pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 2rem;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
+  color: #2d3e50;
 }
 
-.header {
-  color: #2f855a;
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-}
-
-.section {
-  padding: 2rem;
-  margin-bottom: 2rem;
-  background-color: #f7fafc; /* Light background for contrast */
+/* Section for past releases */
+.releasesSection {
+  background-color: #e0f7fa; /* light teal */
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.sectionHeader {
-  color: #2f855a;
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.gridContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.card {
-  background-color: #f0fdf4;
-  border: 1px solid #c6f6d5;
-  border-radius: 8px;
+  width: 100%;
+  margin-bottom: 2rem;
   padding: 1.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
 }
 
-.card:hover {
-  transform: scale(1.03);
+.releasesTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #00796b;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
-.cardTitle {
-  font-size: 1.25rem;
-  color: #22543d;
+.releaseCard {
+  background-color: #ffffff;
+  border-radius: 5px;
+  margin: 1rem 0;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
-.cardVersion, .cardDate, .cardAuthor {
+.releaseTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #004d40;
+}
+
+.releaseDate {
+  font-size: 0.9rem;
+  color: #00796b;
+  margin-top: 0.5rem;
+}
+
+/* Section for current PRs */
+.prSection {
+  background-color: #e8f5e9; /* light green */
+  border-radius: 8px;
+  width: 100%;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.prTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #388e3c;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.prCard {
+  background-color: #ffffff;
+  border-radius: 5px;
+  margin: 1rem 0;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.prTitleText {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.prDate {
+  font-size: 0.9rem;
+  color: #388e3c;
+  margin-top: 0.5rem;
+}
+
+.prDescription {
   font-size: 1rem;
-  color: #2f855a;
-  margin: 0.5rem 0;
-}
-
-.cardDescription {
-  font-size: 0.95rem;
-  color: #4a5568;
+  color: #4caf50;
+  margin-top: 0.5rem;
 }
