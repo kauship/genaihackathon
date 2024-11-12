@@ -1,140 +1,104 @@
-/* Full-screen container with green Docusaurus theme */
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem;
-  background: #002451; /* Dark Docusaurus color */
-  border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  color: #ffffff;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+import React, { useState } from 'react';
+import Layout from '@theme/Layout';
+import styles from './index.module.css';
 
-.title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #a3e635; /* Docusaurus green accent */
-  margin-bottom: 1rem;
-  text-align: center;
-}
+const SECTIONS = [
+  "Overview of Code",
+  "Getting Started",
+  "Code Structure Overview",
+  "Key Code Components",
+  "Functions and API Documentation",
+  "Error Handling and Logging",
+  "Dependencies",
+  "Configuration",
+  "Performance Considerations",
+  "Testing and Quality Assurance",
+  "Security Considerations",
+  "Version Control and Changelog",
+  "FAQ",
+  "Appendix",
+  "Conclusion",
+];
 
-.subtitle {
-  font-size: 1.2rem;
-  color: #d1fae5;
-  margin-bottom: 2rem;
-  text-align: center;
-}
+const Home: React.FC = () => {
+  const [githubLink, setGithubLink] = useState('');
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
+  const [message, setMessage] = useState('');
 
-.form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #333;
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  max-width: 800px;
-}
+  const handleCheckboxChange = (section: string) => {
+    setSelectedSections(prev =>
+      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+    );
+  };
 
-.label {
-  font-weight: bold;
-  color: #4ade80;
-  margin-bottom: 0.5rem;
-}
+  const handleSelectAll = () => {
+    setSelectedSections(
+      selectedSections.length === SECTIONS.length ? [] : [...SECTIONS]
+    );
+  };
 
-.input {
-  width: 100%;
-  padding: 0.8rem;
-  margin-bottom: 1.5rem;
-  border: 2px solid #4ade80;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const response = await fetch('http://localhost:4000/generate-docs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ githubLink, selectedSections }),
+      });
+      const data = await response.json();
+      setMessage(response.ok ? 'Documentation generated successfully!' : data.error || 'Error generating documentation.');
+    } catch (error) {
+      setMessage('Error connecting to the server.');
+    }
+  };
 
-.input:focus {
-  border-color: #22c55e;
-  outline: none;
-  box-shadow: 0 0 5px rgba(34, 197, 94, 0.3);
-}
+  return (
+    <Layout title="Home" description="Generate Documentation for Your Project">
+      <div className={styles.fullscreenContainer}>
+        <div className={styles.innerContainer}>
+          <h1 className={styles.title}>Generate Documentation for Your GitHub Project</h1>
+          <p className={styles.subtitle}>Enter your GitHub link and choose the sections to include.</p>
+          
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <label htmlFor="githubLink" className={styles.label}>GitHub Repository Link:</label>
+            <input
+              type="text"
+              id="githubLink"
+              value={githubLink}
+              onChange={(e) => setGithubLink(e.target.value)}
+              placeholder="https://github.com/user/repo"
+              required
+              className={styles.input}
+            />
 
-/* Green button */
-.button {
-  padding: 0.8rem 2.5rem;
-  font-size: 1.2rem;
-  color: #fff;
-  background-color: #10b981;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+            <div className={styles.sectionSelection}>
+              <div className={styles.selectAll}>
+                <input type="checkbox" onChange={handleSelectAll} checked={selectedSections.length === SECTIONS.length} />
+                <span>Select All Sections</span>
+              </div>
 
-.button:hover {
-  background-color: #059669;
-}
+              <div className={styles.sectionCheckboxes}>
+                {SECTIONS.map(section => (
+                  <label key={section} className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSections.includes(section)}
+                      onChange={() => handleCheckboxChange(section)}
+                      className={styles.checkbox}
+                    />
+                    {section}
+                  </label>
+                ))}
+              </div>
+            </div>
 
-/* Section selection styles */
-.sectionSelection {
-  margin-top: 1.5rem;
-  text-align: left;
-  width: 100%;
-}
+            <button type="submit" className={styles.button}>Generate Documentation</button>
+          </form>
+          {message && <p className={styles.message}>{message}</p>}
+        </div>
+      </div>
+    </Layout>
+  );
+};
 
-.selectAll {
-  display: flex;
-  align-items: center;
-  color: #10b981;
-  font-weight: bold;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-.selectAll input {
-  margin-right: 0.5rem;
-}
-
-/* Checkbox styling with rounded green design */
-.sectionCheckboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  font-size: 1rem;
-  color: #4b5563;
-  background: #f0fdf4;
-  border: 1px solid #10b981;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.checkboxLabel:hover {
-  background-color: #a7f3d0;
-}
-
-.checkbox {
-  margin-right: 0.5rem;
-}
-
-/* Message styling */
-.message {
-  margin-top: 1rem;
-  font-size: 1rem;
-  color: #16a34a;
-  background-color: #dcfce7;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-}
+export default Home;
