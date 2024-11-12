@@ -54,48 +54,46 @@ const Home: React.FC = () => {
 
   return (
     <Layout title="Home" description="Generate Documentation for Your Project">
-      <div className={styles.fullscreenContainer}>
-        <div className={styles.innerContainer}>
-          <h1 className={styles.title}>Generate Documentation for Your GitHub Project</h1>
-          <p className={styles.subtitle}>Enter your GitHub link and choose the sections to include.</p>
-          
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <label htmlFor="githubLink" className={styles.label}>GitHub Repository Link:</label>
-            <input
-              type="text"
-              id="githubLink"
-              value={githubLink}
-              onChange={(e) => setGithubLink(e.target.value)}
-              placeholder="https://github.com/user/repo"
-              required
-              className={styles.input}
-            />
+      <div className={styles.container}>
+        <h1 className={styles.title}>Generate Documentation for Your GitHub Project</h1>
+        <p className={styles.subtitle}>Enter your GitHub link and choose the sections to include.</p>
+        
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <label htmlFor="githubLink" className={styles.label}>GitHub Repository Link:</label>
+          <input
+            type="text"
+            id="githubLink"
+            value={githubLink}
+            onChange={(e) => setGithubLink(e.target.value)}
+            placeholder="https://github.com/user/repo"
+            required
+            className={styles.input}
+          />
 
-            <div className={styles.sectionSelection}>
-              <div className={styles.selectAll}>
-                <input type="checkbox" onChange={handleSelectAll} checked={selectedSections.length === SECTIONS.length} />
-                <span>Select All Sections</span>
-              </div>
-
-              <div className={styles.sectionCheckboxes}>
-                {SECTIONS.map(section => (
-                  <label key={section} className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={selectedSections.includes(section)}
-                      onChange={() => handleCheckboxChange(section)}
-                      className={styles.checkbox}
-                    />
-                    {section}
-                  </label>
-                ))}
-              </div>
+          <div className={styles.sectionSelection}>
+            <div className={styles.selectAll}>
+              <input type="checkbox" onChange={handleSelectAll} checked={selectedSections.length === SECTIONS.length} />
+              <span>Select All Sections</span>
             </div>
 
-            <button type="submit" className={styles.button}>Generate Documentation</button>
-          </form>
-          {message && <p className={styles.message}>{message}</p>}
-        </div>
+            <div className={styles.sectionCheckboxes}>
+              {SECTIONS.map(section => (
+                <label key={section} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={selectedSections.includes(section)}
+                    onChange={() => handleCheckboxChange(section)}
+                    className={styles.checkbox}
+                  />
+                  {section}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button type="submit" className={styles.button}>Generate Documentation</button>
+        </form>
+        {message && <p className={styles.message}>{message}</p>}
       </div>
     </Layout>
   );
