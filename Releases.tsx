@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import styles from './Releases.module.css';
-import releaseData from '../data/releaseData.json'; // Ensure path is correct
+import releaseData from '../data/releaseData.json';
 import clsx from 'clsx';
 
-// Define types for better TypeScript support
 interface Release {
   name: string;
   version: string;
@@ -34,9 +33,9 @@ const Releases: React.FC = () => {
       <div className={clsx(styles.pageContainer)}>
         <h1 className={styles.header}>Releases and Merged Pull Requests</h1>
 
-        <div className={styles.section}>
+        <div className={clsx(styles.section, styles.releasesSection)}>
           <h2 className={styles.sectionHeader}>Completed Releases</h2>
-          <div className={styles.cardContainer}>
+          <div className={styles.gridContainer}>
             {releases.map((release, index) => (
               <div key={index} className={styles.card}>
                 <h3 className={styles.cardTitle}>{release.name}</h3>
@@ -48,9 +47,9 @@ const Releases: React.FC = () => {
           </div>
         </div>
 
-        <div className={styles.section}>
+        <div className={clsx(styles.section, styles.prSection)}>
           <h2 className={styles.sectionHeader}>Recently Merged PRs</h2>
-          <div className={styles.cardContainer}>
+          <div className={styles.gridContainer}>
             {mergedPRs.map((pr, index) => (
               <div key={index} className={styles.card}>
                 <h3 className={styles.cardTitle}>#{pr.number} - {pr.title}</h3>
