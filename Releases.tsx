@@ -1,67 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import Layout from '@theme/Layout';
+import React from 'react';
 import styles from './Releases.module.css';
-import releaseData from '../data/releaseData.json';
-import clsx from 'clsx';
 
-interface Release {
-  name: string;
-  version: string;
-  date: string;
-  description: string;
-}
-
-interface PR {
+type Release = {
   title: string;
-  number: number;
-  author: string;
+  date: string;
+};
+
+type PullRequest = {
+  title: string;
   date: string;
   description: string;
-}
+};
 
 const Releases: React.FC = () => {
-  const [releases, setReleases] = useState<Release[]>([]);
-  const [mergedPRs, setMergedPRs] = useState<PR[]>([]);
+  const releases: Release[] = [
+    { title: 'Release 1.0.0', date: 'January 1, 2024' },
+    { title: 'Release 1.1.0', date: 'February 15, 2024' },
+    // Add more releases as needed
+  ];
 
-  useEffect(() => {
-    setReleases(releaseData.releases);
-    setMergedPRs(releaseData.mergedPRs);
-  }, []);
+  const pullRequests: PullRequest[] = [
+    { title: 'Fix login issue', date: 'March 5, 2024', description: 'Resolved login bug affecting API authentication.' },
+    { title: 'Optimize database queries', date: 'March 7, 2024', description: 'Improved performance of main database queries.' },
+    // Add more PRs as needed
+  ];
 
   return (
-    <Layout title="Releases and Merged PRs">
-      <div className={clsx(styles.pageContainer)}>
-        <h1 className={styles.header}>Releases and Merged Pull Requests</h1>
-
-        <div className={clsx(styles.section, styles.releasesSection)}>
-          <h2 className={styles.sectionHeader}>Completed Releases</h2>
-          <div className={styles.gridContainer}>
-            {releases.map((release, index) => (
-              <div key={index} className={styles.card}>
-                <h3 className={styles.cardTitle}>{release.name}</h3>
-                <p className={styles.cardVersion}>Version: {release.version}</p>
-                <p className={styles.cardDate}>Date: {release.date}</p>
-                <p className={styles.cardDescription}>{release.description}</p>
-              </div>
-            ))}
+    <div className={styles.pageContainer}>
+      {/* Releases Section */}
+      <div className={styles.releasesSection}>
+        <h2 className={styles.releasesTitle}>Completed Releases</h2>
+        {releases.map((release, index) => (
+          <div key={index} className={styles.releaseCard}>
+            <div className={styles.releaseTitle}>{release.title}</div>
+            <div className={styles.releaseDate}>{release.date}</div>
           </div>
-        </div>
-
-        <div className={clsx(styles.section, styles.prSection)}>
-          <h2 className={styles.sectionHeader}>Recently Merged PRs</h2>
-          <div className={styles.gridContainer}>
-            {mergedPRs.map((pr, index) => (
-              <div key={index} className={styles.card}>
-                <h3 className={styles.cardTitle}>#{pr.number} - {pr.title}</h3>
-                <p className={styles.cardAuthor}>Author: {pr.author}</p>
-                <p className={styles.cardDate}>Merged on: {pr.date}</p>
-                <p className={styles.cardDescription}>{pr.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
-    </Layout>
+
+      {/* PR Section */}
+      <div className={styles.prSection}>
+        <h2 className={styles.prTitle}>Current Pull Requests</h2>
+        {pullRequests.map((pr, index) => (
+          <div key={index} className={styles.prCard}>
+            <div className={styles.prTitleText}>{pr.title}</div>
+            <div className={styles.prDate}>{pr.date}</div>
+            <div className={styles.prDescription}>{pr.description}</div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
