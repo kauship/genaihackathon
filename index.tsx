@@ -26,16 +26,19 @@ const Home: React.FC = () => {
   const [message, setMessage] = useState('');
 
   const handleCheckboxChange = (section: string) => {
-    setSelectedSections(prev => 
-      prev.includes(section)
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
+    setSelectedSections(prev =>
+      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedSections(
+      selectedSections.length === SECTIONS.length ? [] : [...SECTIONS]
     );
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     try {
       const response = await fetch('http://localhost:4000/generate-docs', {
         method: 'POST',
@@ -43,11 +46,7 @@ const Home: React.FC = () => {
         body: JSON.stringify({ githubLink, selectedSections }),
       });
       const data = await response.json();
-      if (response.ok) {
-        setMessage('Documentation generated successfully!');
-      } else {
-        setMessage(data.error || 'Error generating documentation.');
-      }
+      setMessage(response.ok ? 'Documentation generated successfully!' : data.error || 'Error generating documentation.');
     } catch (error) {
       setMessage('Error connecting to the server.');
     }
@@ -57,9 +56,8 @@ const Home: React.FC = () => {
     <Layout title="Home" description="Generate Documentation for Your Project">
       <div className={styles.container}>
         <h1 className={styles.title}>Generate Documentation for Your GitHub Project</h1>
-        <p className={styles.subtitle}>
-          Enter your GitHub link and choose the sections to include in the documentation.
-        </p>
+        <p className={styles.subtitle}>Enter your GitHub link and choose the sections to include.</p>
+        
         <form onSubmit={handleSubmit} className={styles.form}>
           <label htmlFor="githubLink" className={styles.label}>GitHub Repository Link:</label>
           <input
@@ -73,7 +71,11 @@ const Home: React.FC = () => {
           />
 
           <div className={styles.sectionSelection}>
-            <h3 className={styles.sectionTitle}>Select Documentation Sections</h3>
+            <div className={styles.selectAll}>
+              <input type="checkbox" onChange={handleSelectAll} checked={selectedSections.length === SECTIONS.length} />
+              <span>Select All Sections</span>
+            </div>
+
             <div className={styles.sectionCheckboxes}>
               {SECTIONS.map(section => (
                 <label key={section} className={styles.checkboxLabel}>
