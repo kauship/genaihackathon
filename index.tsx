@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Layout from '@theme/Layout';
+import styles from './index.module.css';
 
 const Home: React.FC = () => {
   const [githubLink, setGithubLink] = useState('');
@@ -27,10 +28,11 @@ const Home: React.FC = () => {
 
   return (
     <Layout title="Home" description="Generate Documentation for Your Project">
-      <div className="container">
-        <h1>Generate Documentation for Your GitHub Project</h1>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="githubLink">GitHub Repository Link:</label>
+      <div className={styles.container}>
+        <h1 className={styles.title}>Generate Documentation for Your GitHub Project</h1>
+        <p className={styles.subtitle}>Enter your GitHub link to generate technical documentation in a few clicks!</p>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <label htmlFor="githubLink" className={styles.label}>GitHub Repository Link:</label>
           <input
             type="text"
             id="githubLink"
@@ -38,10 +40,11 @@ const Home: React.FC = () => {
             onChange={(e) => setGithubLink(e.target.value)}
             placeholder="https://github.com/user/repo"
             required
+            className={styles.input}
           />
-          <button type="submit">Generate Documentation</button>
+          <button type="submit" className={styles.button}>Generate Documentation</button>
         </form>
-        {message && <p>{message}</p>}
+        {message && <p className={styles.message}>{message}</p>}
       </div>
     </Layout>
   );
