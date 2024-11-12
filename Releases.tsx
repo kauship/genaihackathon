@@ -27,27 +27,30 @@ const Releases: React.FC = () => {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Releases Section */}
-      <div className={styles.releasesSection}>
-        <h2 className={styles.releasesTitle}>Completed Releases</h2>
-        {releases.map((release, index) => (
-          <div key={index} className={styles.releaseCard}>
-            <div className={styles.releaseTitle}>{release.title}</div>
-            <div className={styles.releaseDate}>{release.date}</div>
-          </div>
-        ))}
-      </div>
+      {/* Container for side-by-side layout */}
+      <div className={styles.sectionsContainer}>
+        {/* Releases Section */}
+        <div className={`${styles.section} ${styles.releasesSection}`}>
+          <h2 className={styles.releasesTitle}>Completed Releases</h2>
+          {releases.map((release, index) => (
+            <div key={index} className={styles.card}>
+              <div className={styles.releaseTitle}>{release.title}</div>
+              <div className={styles.releaseDate}>{release.date}</div>
+            </div>
+          ))}
+        </div>
 
-      {/* PR Section */}
-      <div className={styles.prSection}>
-        <h2 className={styles.prTitle}>Current Pull Requests</h2>
-        {pullRequests.map((pr, index) => (
-          <div key={index} className={styles.prCard}>
-            <div className={styles.prTitleText}>{pr.title}</div>
-            <div className={styles.prDate}>{pr.date}</div>
-            <div className={styles.prDescription}>{pr.description}</div>
-          </div>
-        ))}
+        {/* PR Section */}
+        <div className={`${styles.section} ${styles.prSection}`}>
+          <h2 className={styles.prTitle}>Current Pull Requests</h2>
+          {pullRequests.map((pr, index) => (
+            <div key={index} className={styles.card}>
+              <div className={styles.prTitleText}>{pr.title}</div>
+              <div className={styles.prDate}>{pr.date}</div>
+              <div className={styles.prDescription}>{pr.description}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
