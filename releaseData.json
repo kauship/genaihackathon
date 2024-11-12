@@ -1,0 +1,22 @@
+// releaseData.json
+{
+  "releases": [
+    {
+      "name": "Release v1.0",
+      "version": "1.0.0",
+      "date": "2024-11-01",
+      "description": "Initial release with major features and updates."
+    },
+    // More releases...
+  ],
+  "mergedPRs": [
+    {
+      "title": "Feature A added",
+      "number": 101,
+      "author": "contributor1",
+      "date": "2024-11-05",
+      "description": "Implemented Feature A with full functionality."
+    },
+    // More PRs...
+  ]
+}
