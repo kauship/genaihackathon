@@ -1,4 +1,4 @@
-/* Container for the entire releases page */
+/* Main page container */
 .pageContainer {
   display: flex;
   flex-direction: column;
@@ -9,16 +9,26 @@
   color: #2d3e50;
 }
 
-/* Section for past releases */
-.releasesSection {
-  background-color: #e0f7fa; /* light teal */
-  border-radius: 8px;
+/* Container for side-by-side layout */
+.sectionsContainer {
+  display: flex;
+  gap: 2rem;
   width: 100%;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* Section style for both releases and PRs */
+.section {
+  flex: 1;
+  min-width: 300px;
+  background-color: #f0f8f7; /* light teal background */
+  border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Releases title style */
 .releasesTitle {
   font-size: 1.8rem;
   font-weight: bold;
@@ -27,37 +37,7 @@
   text-align: center;
 }
 
-.releaseCard {
-  background-color: #ffffff;
-  border-radius: 5px;
-  margin: 1rem 0;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-.releaseTitle {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #004d40;
-}
-
-.releaseDate {
-  font-size: 0.9rem;
-  color: #00796b;
-  margin-top: 0.5rem;
-}
-
-/* Section for current PRs */
-.prSection {
-  background-color: #e8f5e9; /* light green */
-  border-radius: 8px;
-  width: 100%;
-  padding: 1.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
+/* PR title style */
 .prTitle {
   font-size: 1.8rem;
   font-weight: bold;
@@ -66,25 +46,24 @@
   text-align: center;
 }
 
-.prCard {
+/* Shared card style for releases and PRs */
+.card {
   background-color: #ffffff;
   border-radius: 5px;
   margin: 1rem 0;
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
 }
 
-.prTitleText {
+.releaseTitle, .prTitleText {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #2e7d32;
+  color: #004d40;
 }
 
-.prDate {
+.releaseDate, .prDate {
   font-size: 0.9rem;
-  color: #388e3c;
+  color: #00796b;
   margin-top: 0.5rem;
 }
 
